@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+    <head>
+        <title>Wall Assignment</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'the_wall_app/css/styles.css' %}">
+    </head>
+    <body>
+        <div class="container">
+            <div class="heading">
+                <h1>CodingDojo Wall</h1>
+                <p>Welcome {{request.session.welcomename}}</p>
+                <a href="/logout">log off</a>
+            </div>
+            <div class="postmessage">
+                    <form action="/wall/process_post", method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="message"><h3>Post a comment</h3></label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post a message</button>
+                    </form>
+                    <div class="posts">
+
+                    </div>
+            </div>
+        </div>
+    </body>
+</html>
