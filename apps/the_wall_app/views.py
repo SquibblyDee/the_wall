@@ -67,8 +67,8 @@ def wall(request):
     if 'isloggedin' not in request.session:
         return redirect('/')
     context = {
-        "messages": Message.objects.order_by("-created_at"),
-        "comments": Comment.objects.order_by("-created_at"),
+        "messages": Message.objects.order_by("created_at"),
+        "comments": Comment.objects.order_by("created_at"),
         }
     return render(request,'the_wall_app/wall.html', context)
 
