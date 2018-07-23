@@ -23,7 +23,7 @@ class UserManager(models.Manager):
         if postData['input_last_name'].isalpha() == False:
             errors["input_last_name"] = "Last name cannot contain numbers"
         # query the list of all emails to verify the desired address is not registered yet
-        query = Users.objects.all().values('email')
+        query = User.objects.all().values('email')
         for row in query:
             for key in row:
                 if row[key] == postData['input_email']:
@@ -41,15 +41,32 @@ class UserManager(models.Manager):
         return errors
 
 # This is our table
-class Users(models.Model):
+class User(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now_add=True)
-    # *************************
-    # Connect an instance of BlogManager to our Blog model overwriting
-    # the old hidden objects key with a new one with extra properties!!!
+    updated_at = models.DateField(auto_now=True)
     objects = UserManager()
-    # *************************
+    def __repr__(self):
+        return "<User object: {} {} {}>".format(self.first_name, self.last_name, self.email)
+
+class Message(models.Model):
+    message = models.CharField(max_length=255)
+    messages_user = models.ForeignKey(User, related_name="users_messages")
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    objects = UserManager()
+    def __repr__(self):
+        return "<Message object: {} {}>".format(self.message, self.messages_user)
+
+class Comment(models.Model):
+    comment = models.CharField(max_length = 255)
+    comments_message = models.ForeignKey(Message, related_name="messages_comment")
+    comments_user = models.ForeignKey(User, related_name="users_comment")
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    objects = UserManager()
+    def __repr__(self):
+        return "<Comment object: {} {} {}>".format(self.comment, self.comments_message, self.comments_user)

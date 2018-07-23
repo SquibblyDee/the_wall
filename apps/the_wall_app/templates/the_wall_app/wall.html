@@ -15,17 +15,36 @@
                 <a href="/logout">log off</a>
             </div>
             <div class="postmessage">
-                    <form action="/wall/process_post", method="post">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="message"><h3>Post a comment</h3></label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Post a message</button>
-                    </form>
-                    <div class="posts">
-
+                <form action="/process_post", method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="message"><h3>Post a message</h3></label>
+                        <textarea class="form-control" id="message" name="message" rows="3"></textarea>
                     </div>
+                    <button type="submit" class="btn btn-primary">Post a message</button>
+                </form>
+                <div class="messsages">
+                    {% for row in messages %}
+                        <h4> {{row.messages_user.first_name}} {{row.messages_user.last_name}} - {{ row.created_at }} </h4>
+                        <p> {{ row.message }} </p>
+                        {% for comment in comments %}
+                            {% if comment.comments_message.id == row.id %}
+                                <p><b> {{comment.comments_user.first_name}} {{comment.comments_user.last_name}} - {{ comment.created_at }} </b></p>
+                                <p> {{ comment.comment }} </p>
+                            {% endif %}
+                        {% endfor %}
+                        <form action="/process_comment", method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="comment"><h3>Post a comment</h3></label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="2"></textarea>
+                                    <input type="hidden" name="message_id" value= {{ row.id }} id="message_id">
+                                </div>
+                                <button type="submit" class="btn btn-success">Post a comment</button>
+                            </form>
+                    {% endfor %}
+                    
+                </div>
             </div>
         </div>
     </body>

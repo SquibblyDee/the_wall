@@ -5,14 +5,14 @@ from django.contrib import auth
 import bcrypt
 
 #  import our db
-from .models import Users
+from .models import *
 
 def index(request):
     return render(request,'the_wall_app/index.html')
 
 def process_register(request, methods=['POST']):
     # pass the post data to the method we wrote and save the response in a variable called errors
-    errors = Users.objects.basic_validator(request.POST)
+    errors = User.objects.basic_validator(request.POST)
     # check if the errors object has anything in it
     if len(errors):
         # if the errors object contains anything, loop through each key-value pair and make a flash message
@@ -25,8 +25,8 @@ def process_register(request, methods=['POST']):
         # if the errors object is empty, that means there were no errors!
         # add our new record to the table , push what we need to session,
         # and redirect to /success to render our final page
-        Users.objects.create(first_name=request.POST['input_first_name'], last_name=request.POST['input_last_name'], email=request.POST['input_email'], password=bcrypt.hashpw(request.POST['input_password'].encode('utf8'), bcrypt.gensalt()))
-        query = Users.objects.filter(email=request.POST['input_email']).values('id')
+        User.objects.create(first_name=request.POST['input_first_name'], last_name=request.POST['input_last_name'], email=request.POST['input_email'], password=bcrypt.hashpw(request.POST['input_password'].encode('utf8'), bcrypt.gensalt()))
+        query = User.objects.filter(email=request.POST['input_email']).values('id')
         for row in query:
             request.session['isloggedin'] = row['id']
         request.session['welcomename'] = request.POST['input_first_name']
@@ -35,7 +35,7 @@ def process_register(request, methods=['POST']):
 
 def process_login(request, methods=['POST']):
     # Query the data we need
-    query = Users.objects.all().values('id', 'email', 'first_name', 'password')
+    query = User.objects.all().values('id', 'email', 'first_name', 'password')
     # Iterate through query until we find user email then verify password is legit
     for row in query:
         if row['email'] == request.POST['login_email'] and bcrypt.checkpw(request.POST['login_password'].encode(), row['password'].encode()): 
@@ -46,8 +46,15 @@ def process_login(request, methods=['POST']):
     return redirect('/')
 
 def process_post(request, methods=['POST']):
-    print("WE IN PROCESSSSSS POSTTTTT")
-    return redirect('/')
+    the_user = User.objects.get(id=request.session['isloggedin'])
+    Message.objects.create(message=request.POST['message'], messages_user = the_user)
+    return redirect('/wall')
+
+def process_comment(request, methods=['POST']):
+    the_user = User.objects.get(id=request.session['isloggedin'])
+    print(request.POST)
+    Comment.objects.create(comment=request.POST['comment'], comments_user=the_user, comments_message=Message.objects.get(id=request.POST['message_id']) )
+    return redirect('/wall')
 
 def success(request):
     # If the user has a isLoggedin session 
@@ -57,8 +64,13 @@ def success(request):
         return redirect('/')
 
 def wall(request):
-    
-    return render(request,'the_wall_app/wall.html')
+    if 'isloggedin' not in request.session:
+        return redirect('/')
+    context = {
+        "messages": Message.objects.order_by("-created_at"),
+        "comments": Comment.objects.order_by("-created_at"),
+        }
+    return render(request,'the_wall_app/wall.html', context)
 
 # Just clears out session
 def logout(request):
